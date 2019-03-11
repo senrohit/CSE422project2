@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 #define BIDIRECTIONAL 0
 
 /********* SECTION 0: GLOBAL DATA STRUCTURES*********/
@@ -104,13 +105,18 @@ int packet_timeout = 0;
 /* compute the checksum of the packet and return it to the caller */
 int ComputeChecksum(struct pkt packet)
 {
-	return 0;
+	unsigned int sum_of_payload = 0;
+	for (unsigned int i = 0; i < PAYLOADSIZE; i++)
+	{
+		sum_of_payload +=  (uint8_t) packet.payload[i];
+	}
+	return packet.acknum + packet.seqnum + sum_of_payload;
 }
 
 /* check the checksum of the packet received, return 1 if packet is corrupted, 0 otherwise */
 int CheckCorrupted(struct pkt packet)
 {
-	return 0;
+	return packet.checksum != ComputeChecksum(packet);
 }
 
 

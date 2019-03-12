@@ -123,6 +123,20 @@ int CheckCorrupted(struct pkt packet)
 /* called from layer 5, passed the data to be sent to other side */
 void A_output(struct msg message)
 {
+    // construct packet if nextseqnum is inside the sender window
+    
+    struct pkt sendPacket;
+    sendPacket.seqnum = nextseqnum;
+    sendPacket.acknum = NOTUSED;    
+    memcpy(sendPacket.payload , message.data, PAYLOADSIZE);
+    sendPacket.checksum = ComputeChecksum(sendPacket);
+    //pass to layer 3
+    tolayer3(A,sendPacket);
+    /*. Copy the packet to the buffer defined by
+winbuf. If it is the first packet in window, start the timer. The timeout of the timer should be
+set to RTT (which is defined in the file). If ‘nextseqnum’ does not fall within the sender window,
+buffer the message if the sender message buffer is not full, exit otherwise (which typically will
+not occur). Use buffer, buffront, bufrear, msgnum to buffer the sender messages.*/
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
@@ -133,7 +147,9 @@ void A_input(struct pkt packet)
 /* called when A's timer goes off */
 void A_timerinterrupt(int seqnum)
 {
-
+    stoptimer(A,seqnum);
+    //resend the packet
+    //start timer again
 }
 
 /* called from layer 3, when a packet arrives for layer 4 at B*/
@@ -159,7 +175,7 @@ void A_init()
 	}
 }
 
-/* the following rouytine will be called once (only) before any other */
+/* the following routine will be called once (only) before any other */
 /* entity B routines are called. You can use it to do any initialization */
 void B_init()
 {

@@ -124,17 +124,32 @@ int CheckCorrupted(struct pkt packet)
 void A_output(struct msg message)
 {
     // construct packet if nextseqnum is inside the sender window
-    
-    struct pkt sendPacket;
-    sendPacket.seqnum = nextseqnum;
-    sendPacket.acknum = NOTUSED;    
-    memcpy(sendPacket.payload , message.data, PAYLOADSIZE);
-    sendPacket.checksum = ComputeChecksum(sendPacket);
-    //pass to layer 3
-    tolayer3(A,sendPacket);
-    /*. Copy the packet to the buffer defined by
-winbuf. If it is the first packet in window, start the timer. The timeout of the timer should be
-set to RTT (which is defined in the file). If ‘nextseqnum’ does not fall within the sender window,
+    if(nextseqnum < send_base + WINDOWSIZE)
+    {
+        struct pkt sendPacket;
+        sendPacket.seqnum = nextseqnum;
+        sendPacket.acknum = NOTUSED;    
+        memcpy(sendPacket.payload , message.data, PAYLOADSIZE);
+        sendPacket.checksum = ComputeChecksum(sendPacket);
+        //pass to layer 3
+        tolayer3(A,sendPacket);
+        /*. Copy the packet to the buffer defined by
+    winbuf. If it is the first packet in window, start the timer. The timeout of the timer should be
+    set to RTT (which is defined in the file). 
+         */
+        memcpy(winbuf[pktnum],sendPacket, sizeof(struct pkt));
+
+        if(winrear = pktnum)
+        {
+            starttimer(A,pktnum, RTT);
+        }
+        //increase pktnum and move front of buffer
+        pktnum = (pktnum + 1)% WINDOWSIZE;
+        winfront = (winfront + 1)% WINDOWSIZE;
+    }else{
+        
+    }
+     /*If ‘nextseqnum’ does not fall within the sender window,
 buffer the message if the sender message buffer is not full, exit otherwise (which typically will
 not occur). Use buffer, buffront, bufrear, msgnum to buffer the sender messages.*/
 }

@@ -240,8 +240,16 @@ int main(void)
 	struct pkt  pkt2give;
 
 	int i, j;
-
-
+        
+        struct pkt testpkt;
+        testpkt.seqnum = 0;
+	testpkt.acknum = 0;
+	for (int i = 0; i < 20; i++)
+	{
+		testpkt.payload[i] = "ABCDEFGHIJKLMNOPQRS"[i];
+	}
+	testpkt.checksum = ComputeChecksum(testpkt);
+        printf("%d\n", CheckCorrupted(testpkt) );
 
 	init();
 	A_init();

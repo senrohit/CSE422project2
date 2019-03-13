@@ -144,14 +144,20 @@ void A_output(struct msg message)
             starttimer(A,pktnum, RTT);
         }
         //increase pktnum and move front of buffer
-        pktnum = (pktnum + 1)% WINDOWSIZE;
+        pktnum = pktnum + 1;
         winfront = (winfront + 1)% WINDOWSIZE;
     }else{
-        
-    }
-     /*If ‘nextseqnum’ does not fall within the sender window,
+        /*If ‘nextseqnum’ does not fall within the sender window,
 buffer the message if the sender message buffer is not full, exit otherwise (which typically will
 not occur). Use buffer, buffront, bufrear, msgnum to buffer the sender messages.*/
+        if (msgnum < MAXBUFSIZE)
+        {
+            msgnum += 1;
+            buffront = (buffront + 1)% MAXBUFSIZE
+            buffer[buffront] = msg;
+        }
+    }
+     
 }
 
 /* called from layer 3, when a packet arrives for layer 4 */
@@ -164,6 +170,16 @@ void A_timerinterrupt(int seqnum)
 {
     stoptimer(A,seqnum);
     //resend the packet
+    for( int i = 0; i < pktnum; i++)
+    {
+       if ( winbuf[winrear + i].seqnum == seqnum)
+       {
+           tolayer3(A,winbuf[winrear + i].seqnum);
+           break;
+       }
+    }
+    starttimer(A,seqnum);
+    
     //start timer again
 }
 
